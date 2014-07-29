@@ -4,30 +4,42 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CMD_SRCS += \
-../project0_ccs.cmd 
+../nrf24l01_driver.cmd 
 
 C_SRCS += \
-../project0.c \
+../main.c \
+../nrf24l01.c \
+../spi.c \
 ../startup_ccs.c 
 
 OBJS += \
-./project0.obj \
+./main.obj \
+./nrf24l01.obj \
+./spi.obj \
 ./startup_ccs.obj 
 
 C_DEPS += \
-./project0.pp \
+./main.pp \
+./nrf24l01.pp \
+./spi.pp \
 ./startup_ccs.pp 
 
 C_DEPS__QUOTED += \
-"project0.pp" \
+"main.pp" \
+"nrf24l01.pp" \
+"spi.pp" \
 "startup_ccs.pp" 
 
 OBJS__QUOTED += \
-"project0.obj" \
+"main.obj" \
+"nrf24l01.obj" \
+"spi.obj" \
 "startup_ccs.obj" 
 
 C_SRCS__QUOTED += \
-"../project0.c" \
+"../main.c" \
+"../nrf24l01.c" \
+"../spi.c" \
 "../startup_ccs.c" 
 
 

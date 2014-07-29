@@ -8,9 +8,14 @@ CG_TOOL_ROOT := C:/ti/ccsv5/tools/compiler/arm_5.1.1
 
 ORDERED_OBJS += \
 $(GEN_CMDS__FLAG) \
+"./utils/ustdlib.obj" \
+"./utils/uartstdio.obj" \
+"./utils/cpu_usage.obj" \
 "./startup_ccs.obj" \
-"./project0.obj" \
-"../project0_ccs.cmd" \
+"./spi.obj" \
+"./nrf24l01.obj" \
+"./main.obj" \
+"../nrf24l01_driver.cmd" \
 -l"libc.a" \
 -l"C:/ti/TivaWare_C_Series-1.1/examples/boards/ek-tm4c123gxl/project0/ccs/../../../../../driverlib/ccs/Debug/driverlib.lib" \
 
@@ -22,7 +27,9 @@ RMDIR := RMDIR /S/Q
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include subdir_vars.mk
+-include utils/subdir_vars.mk
 -include subdir_rules.mk
+-include utils/subdir_rules.mk
 -include objects.mk
 
 ifneq ($(MAKECMDGOALS),clean)
@@ -125,8 +132,8 @@ nrf24l01_driver.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 # Other Targets
 clean:
 	-$(RM) $(TMS470_EXECUTABLE_OUTPUTS__QUOTED) "nrf24l01_driver.out"
-	-$(RM) "project0.pp" "startup_ccs.pp" 
-	-$(RM) "project0.obj" "startup_ccs.obj" 
+	-$(RM) "main.pp" "nrf24l01.pp" "spi.pp" "startup_ccs.pp" "utils\cpu_usage.pp" "utils\uartstdio.pp" "utils\ustdlib.pp" 
+	-$(RM) "main.obj" "nrf24l01.obj" "spi.obj" "startup_ccs.obj" "utils\cpu_usage.obj" "utils\uartstdio.obj" "utils\ustdlib.obj" 
 	-@echo 'Finished clean'
 	-@echo ' '
 

@@ -1,8 +1,8 @@
 /******************************************************************************
  *
- * boot_demo1_ccs.cmd - CCS linker configuration file for boot_demo1.
+ * CCS linker configuration file for udma_demo.
  *
- * Copyright (c) 2012-2014 Texas Instruments Incorporated.  All rights reserved.
+ * Copyright (c) 2012-2013 Texas Instruments Incorporated.  All rights reserved.
  * Software License Agreement
  * 
  * Texas Instruments (TI) is supplying this software for use solely and
@@ -18,7 +18,7 @@
  * CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL, OR CONSEQUENTIAL
  * DAMAGES, FOR ANY REASON WHATSOEVER.
  * 
- * This is part of revision 2.1.0.12573 of the DK-TM4C123G Firmware Package.
+ * This is part of revision 1.1 of the EK-TM4C123GXL Firmware Package.
  *
  *****************************************************************************/
 
@@ -36,7 +36,7 @@
 
 /* The starting address of the application.  Normally the interrupt vectors  */
 /* must be located at the beginning of the application.                      */
-#define APP_BASE 0x00002800
+#define APP_BASE 0x00000000
 #define RAM_BASE 0x20000000
 
 /* System memory map */
@@ -44,7 +44,7 @@
 MEMORY
 {
     /* Application stored in and executes from internal flash */
-    FLASH (RX) : origin = APP_BASE, length = 0x0003d800
+    FLASH (RX) : origin = APP_BASE, length = 0x00040000
     /* Application uses internal RAM for data */
     SRAM (RWX) : origin = 0x20000000, length = 0x00008000
 }
