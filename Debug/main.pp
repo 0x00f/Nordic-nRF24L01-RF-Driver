@@ -17,6 +17,7 @@ main.obj: C:/ti/TivaWare_C_Series-1.1/driverlib/rom.h
 main.obj: C:/ti/TivaWare_C_Series-1.1/driverlib/ssi.h
 main.obj: C:/ti/TivaWare_C_Series-1.1/utils/uartstdio.h
 main.obj: C:/ti/ccsv5/tools/compiler/arm_5.1.1/include/stdarg.h
+main.obj: ../nrf24l01.h
 main.obj: ../spi.h
 
 ../main.c: 
@@ -36,4 +37,5 @@ C:/ti/TivaWare_C_Series-1.1/driverlib/rom.h:
 C:/ti/TivaWare_C_Series-1.1/driverlib/ssi.h: 
 C:/ti/TivaWare_C_Series-1.1/utils/uartstdio.h: 
 C:/ti/ccsv5/tools/compiler/arm_5.1.1/include/stdarg.h: 
+../nrf24l01.h: 
 ../spi.h: 

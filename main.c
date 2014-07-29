@@ -9,6 +9,7 @@
 #include "driverlib/rom.h"
 #include "driverlib/ssi.h"
 #include "utils/uartstdio.h"
+#include "nrf24l01.h"
 #include "spi.h"
 
 // Define pin to LED color mapping.
@@ -56,8 +57,8 @@ int main(void)
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
     GPIOPinTypeGPIOOutput(GPIO_PORTB_BASE, LED_0 | LED_1 | LED_2 | LED_3 );
 
-    // Initialize SPI port
-    SPIInit();
+    // Initialize RF module port for RX
+    RFInit(0);
 
     ConfigureUART();
     // Loop Forever
@@ -68,11 +69,7 @@ int main(void)
     	GPIOPinWrite(GPIO_PORTB_BASE, LED_0, LED_0);
     	SysCtlDelay(SysCtlClockGet()/12);
     	UARTprintf("Rohit\n");
-    	GPIOPinWrite(GPIO_PORTD_BASE, GPIO_PIN_1, 0);
-    	SPIDataWrite(0xff);
-    	UARTprintf("%x\n", SPIDataRead());
-    	GPIOPinWrite(GPIO_PORTD_BASE, GPIO_PIN_1 , GPIO_PIN_1);
-    	//SSIDataGet(SPI_BASE, &data);
-    	//UARTprintf("%x\n", data);
+
+       UARTprintf("%x\n", RFReadRegister(READ_REG + CONFIG));
     }
 }
