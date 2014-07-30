@@ -2,7 +2,7 @@
 <link_info>
    <banner>TI ARM Linker PC v5.1.1</banner>
    <copyright>Copyright (c) 1996-2013 Texas Instruments Incorporated</copyright>
-   <link_time>0x53d96513</link_time>
+   <link_time>0x53d96633</link_time>
    <link_errors>0x0</link_errors>
    <output_file>nrf24l01_driver.out</output_file>
    <entry_point>
