@@ -6,6 +6,7 @@
  */
 
 #include "nrf24l01.h"
+#include "driverlib/sysctl.h"
 
 #define LED_0	GPIO_PIN_0
 #define LED_1	GPIO_PIN_1
@@ -48,7 +49,33 @@ void RFInit(uint32_t ui32Mode)
 		SPISetCELow();
 
 		// ----- //
+
+		RFWriteRegister(WRITE_REG + SETUP_AW, 0x01); // Set address width to three bytes
+		// set TX address
 		SPISetCSNLow();
+		SPIDataWrite(WRITE_REG + TX_ADDR);
+		SPIDataWrite(0x2C); // LSB
+		SPIDataWrite(0x3E);
+		SPIDataWrite(0x3E); // MSB
+		SPISetCSNHigh();
+		// set RX pipe 0 address
+		SPISetCSNLow();
+		SPIDataWrite(WRITE_REG + RX_ADDR_P0);
+		SPIDataWrite(0x2C); // LSB
+		SPIDataWrite(0x3E);
+		SPIDataWrite(0x3E); // MSB
+		SPISetCSNHigh();
+		RFWriteRegister(WRITE_REG + EN_AA, 0x01);
+		RFWriteRegister(WRITE_REG + EN_RXADDR, 0x01);
+		RFWriteRegister(WRITE_REG + SETUP_RETR, 0x12); // set retries to 5 and delay to 500us
+		RFWriteRegister(WRITE_REG + RF_CH, 20); // set RF channel
+		RFWriteRegister(WRITE_REG + DYNPD, 0x01);
+		RFWriteRegister(WRITE_REG + FEATURE, 0x06); // enable dynamic payload length
+		RFWriteRegister(WRITE_REG + RF_SETUP, 0x0F); // set data rate at 2mbps and power at 0dBm
+		RFWriteRegister(WRITE_REG + CONFIG, 0x6E); // MAX_RT interrupt on IRQ and TX mode on
+
+		// Flush SPI RX FIFO to remove residual data
+		SPIRXFlush();
 		// ----- //
 
 		SPISetCEHigh();
@@ -91,6 +118,7 @@ uint32_t RFWriteSendBuffer(uint32_t *ui32Data, uint32_t ui32Bytes)
 	SPIDataWrite(FLUSH_TX);
 	SPISetCSNHigh();
 
+	SPISetCELow();
 	SPISetCSNLow();
 	SPIDataWrite(WR_TX_PLOAD);
 	for(i = 0 ; i < ui32Bytes ; ++i)
@@ -98,13 +126,14 @@ uint32_t RFWriteSendBuffer(uint32_t *ui32Data, uint32_t ui32Bytes)
 		SPIDataWrite(ui32Data[i]);
 	}
 	SPISetCSNHigh();
+	SPISetCEHigh();
 	return i;
 }
 
 // read from recive buffer. Returns number of bytes read
 uint32_t RFReadRecieveBuffer(uint32_t *ui32Data)
 {
-	uint32_t ui32Bytes;
+	uint32_t ui32Bytes = 3;
 	uint32_t i;
 	// Find number of bytes to read
 	SPISetCSNLow();

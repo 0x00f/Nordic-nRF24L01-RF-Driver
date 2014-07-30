@@ -46,4 +46,7 @@ void SPISetCSNHigh(void);
 void SPISetCELow();
 void SPISetCEHigh();
 
+// interrupt handler for interrupts on IRQ
+extern void IRQInterruptHandler(void);
+
 #endif /* SPI_H_ */

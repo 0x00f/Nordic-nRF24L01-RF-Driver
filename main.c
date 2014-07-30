@@ -50,6 +50,8 @@ void ConfigureUART(void)
 // Main 'C' Language entry point.
 int main(void)
 {
+	uint32_t ui32TxBuffer[MAX_PLOAD];
+	uint32_t ui32RxBuffer[MAX_PLOAD];
 	// Setup the system clock to run at 50 Mhz from PLL with external oscillator
     SysCtlClockSet(SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL | SYSCTL_OSC_MAIN | SYSCTL_XTAL_16MHZ);
 
@@ -58,9 +60,13 @@ int main(void)
     GPIOPinTypeGPIOOutput(GPIO_PORTB_BASE, LED_0 | LED_1 | LED_2 | LED_3 );
 
     // Initialize RF module port for RX
-    RFInit(0);
+    RFInit(1);
 
     ConfigureUART();
+
+    ui32TxBuffer[0] = 0x10;
+    RFWriteSendBuffer(ui32TxBuffer, 1);
+
     // Loop Forever
     while(1)
     {
@@ -68,8 +74,19 @@ int main(void)
     	SysCtlDelay(SysCtlClockGet()/12);
     	GPIOPinWrite(GPIO_PORTB_BASE, LED_0, LED_0);
     	SysCtlDelay(SysCtlClockGet()/12);
-    	UARTprintf("Rohit\n");
-
-       UARTprintf("%x\n", RFReadRegister(READ_REG + CONFIG));
+//    	UARTprintf("Rohit\n");
+//
+//       UARTprintf("%x\n", RFReadRegister(READ_REG + CONFIG));
     }
+}
+
+void IRQInterruptHandler(void)
+{
+	GPIOIntClear(IRQ_BASE, GPIO_INT_PIN_7);
+	RFWriteRegister(WRITE_REG + STATUSREG, 0x10);
+	//GPIOPinWrite(GPIO_PORTB_BASE, LED_0, 0);
+	//SysCtlDelay(SysCtlClockGet()/12);
+	UARTprintf("fail\n");
+	//GPIOPinWrite(GPIO_PORTB_BASE, LED_0, LED_0);
+	//SysCtlDelay(SysCtlClockGet()/12);
 }

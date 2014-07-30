@@ -15,6 +15,7 @@ spi.obj: C:/ti/TivaWare_C_Series-1.1/driverlib/gpio.h
 spi.obj: C:/ti/TivaWare_C_Series-1.1/driverlib/pin_map.h
 spi.obj: C:/ti/TivaWare_C_Series-1.1/driverlib/ssi.h
 spi.obj: C:/ti/TivaWare_C_Series-1.1/driverlib/rom.h
+spi.obj: C:/ti/TivaWare_C_Series-1.1/driverlib/interrupt.h
 
 ../spi.c: 
 ../spi.h: 
@@ -31,3 +32,4 @@ C:/ti/TivaWare_C_Series-1.1/driverlib/gpio.h:
 C:/ti/TivaWare_C_Series-1.1/driverlib/pin_map.h: 
 C:/ti/TivaWare_C_Series-1.1/driverlib/ssi.h: 
 C:/ti/TivaWare_C_Series-1.1/driverlib/rom.h: 
+C:/ti/TivaWare_C_Series-1.1/driverlib/interrupt.h: 
