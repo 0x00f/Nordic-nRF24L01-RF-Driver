@@ -59,31 +59,31 @@ void IRQInterruptHandler(void)
 
 	SPISetCELow(); // set CE low to cease all operation
 
-//	// --------------- TX operation  ------------- //
-//	//Flush TX buffer
-//	SPISetCSNLow();
-//	SPIDataWrite(FLUSH_TX);
-//	SPIDataRead();
-//	SPISetCSNHigh();
-//
-//	RFWriteRegister(WRITE_REG + STATUSREG, 0x10); // Clear MAX_RT flag
-//
-//	// Do something
-//	// Custom Board Board
-//	GPIOPinWrite(GPIO_PORTB_BASE, LED_0, 0);
-//	SysCtlDelay(SysCtlClockGet()/12);
-//	GPIOPinWrite(GPIO_PORTB_BASE, LED_0, LED_0);
-//	SysCtlDelay(SysCtlClockGet()/12);
-//	UARTprintf("fail\n");
-//
-//	// Launchpad Board
-//	/*GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1, GPIO_PIN_1);
-//	SysCtlDelay(SysCtlClockGet()/12);
-//	GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1, 0);
-//	SysCtlDelay(SysCtlClockGet()/12);
-//	UARTprintf("fail\n");*/
-//
-//	// --------------- TX operation  ------------- //
+	// --------------- TX operation  ------------- //
+	//Flush TX buffer
+	SPISetCSNLow();
+	SPIDataWrite(FLUSH_TX);
+	SPIDataRead();
+	SPISetCSNHigh();
+
+	RFWriteRegister(WRITE_REG + STATUSREG, 0x10); // Clear MAX_RT flag
+
+	// Do something
+	// Custom Board Board
+	GPIOPinWrite(GPIO_PORTB_BASE, LED_0, 0);
+	SysCtlDelay(SysCtlClockGet()/12);
+	GPIOPinWrite(GPIO_PORTB_BASE, LED_0, LED_0);
+	SysCtlDelay(SysCtlClockGet()/12);
+	UARTprintf("fail\n");
+
+	// Launchpad Board
+	/*GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1, GPIO_PIN_1);
+	SysCtlDelay(SysCtlClockGet()/12);
+	GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1, 0);
+	SysCtlDelay(SysCtlClockGet()/12);
+	UARTprintf("fail\n");*/
+
+	// --------------- TX operation  ------------- //
 
 	// --------------- RX operation  ------------- //
 	ui32Bytes = RFReadRecieveBuffer(ui32RxBuffer);
@@ -129,10 +129,10 @@ int main(void)
     RFInit(0);
     // --------------- RX operation  ------------- //
 
-//    // --------------- TX operation  ------------- //
-//    // Initialize RF module port for TX
-//    RFInit(1);
-//    // --------------- TX operation  ------------- //
+    // --------------- TX operation  ------------- //
+    // Initialize RF module port for TX
+    RFInit(1);
+    // --------------- TX operation  ------------- //
 
     // Set up IRQ for handling interrupts
     ROM_GPIOPinTypeGPIOInput(IRQ_BASE, IRQ);
@@ -144,20 +144,20 @@ int main(void)
     // configure UART for console operation
     ConfigureUART();
 
-//    // --------------- TX operation  ------------- //
-//    // Generate packet to send
-//    for(i = 1 ; i <= 32 ; ++i)
-//    	ui32TxBuffer[i-1] = i;
-//    // --------------- TX operation  ------------- //
+    // --------------- TX operation  ------------- //
+    // Generate packet to send
+    for(i = 1 ; i <= 32 ; ++i)
+    	ui32TxBuffer[i-1] = i;
+    // --------------- TX operation  ------------- //
 
     // Loop Forever
     while(1)
     {
-//    	// --------------- TX operation  ------------- //
-//    	// Send packet every one second
-//        RFWriteSendBuffer(ui32TxBuffer, 32);
-//        ROM_SysCtlDelay(SysCtlClockGet()/3);
-//        // --------------- TX operation  ------------- //
+    	// --------------- TX operation  ------------- //
+    	// Send packet every one second
+        RFWriteSendBuffer(ui32TxBuffer, 32);
+        ROM_SysCtlDelay(SysCtlClockGet()/3);
+        // --------------- TX operation  ------------- //
     }
 }
 
