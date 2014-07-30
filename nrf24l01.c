@@ -6,12 +6,6 @@
  */
 
 #include "nrf24l01.h"
-#include "driverlib/sysctl.h"
-
-#define LED_0	GPIO_PIN_0
-#define LED_1	GPIO_PIN_1
-#define LED_2	GPIO_PIN_2
-#define LED_3	GPIO_PIN_3
 
 // initialize the RF module
 void RFInit(uint32_t ui32Mode)
@@ -20,40 +14,40 @@ void RFInit(uint32_t ui32Mode)
 
 	if(ui32Mode == 0) // RX Mode
 	{
-		SPISetCELow();
+		SPISetCELow(); // disable all communication
 
 		// ----- //
-		SPISetCSNLow();
 		RFWriteRegister(WRITE_REG + SETUP_AW, 0x01); // Set address width to three bytes
 		// set RX pipe 0 address
+		SPISetCSNLow();
 		SPIDataWrite(WRITE_REG + RX_ADDR_P0);
 		SPIDataRead();
-		SPIDataWrite(0x3C); // LSB
+		SPIDataWrite(0x2C); // LSB
 		SPIDataRead();
-		SPIDataWrite(0x3C);
+		SPIDataWrite(0x3E);
 		SPIDataRead();
-		SPIDataWrite(0x3C); // MSB
+		SPIDataWrite(0x3E); // MSB
 		SPIDataRead();
+		SPISetCSNHigh();
 		RFWriteRegister(WRITE_REG + EN_AA, 0x01); // enable ACK on RX pipe 0
 		RFWriteRegister(WRITE_REG + EN_RXADDR, 0x01); // enable data pipe 0
-		RFWriteRegister(WRITE_REG + RF_CH, 60); // set RF channel
-		RFWriteRegister(WRITE_REG + RF_SETUP, 0x0E); // set data rate at 2mbps and power at 0dBm
+		RFWriteRegister(WRITE_REG + RF_CH, 20); // set RF channel
+		RFWriteRegister(WRITE_REG + RF_SETUP, 0x0F); // set data rate at 2mbps and power at 0dBm
 		RFWriteRegister(WRITE_REG + DYNPD, 0x01); // enable dynamic payload length for RX pipe 0
-		RFWriteRegister(WRITE_REG + FEATURE, 0x04); // enable dynamic payload length
+		RFWriteRegister(WRITE_REG + FEATURE, 0x06); // enable dynamic payload length
 		RFWriteRegister(WRITE_REG + CONFIG, 0x3F); // RX_DR interrupt on IRQ pin and RX mode on
-		SPISetCSNHigh();
+
 		// Flush SPI RX FIFO to remove residual data
 		SPIRXFlush();
 		// ----- //
 
-		SPISetCEHigh();
+		SPISetCEHigh(); // enable all communication
 	}
 	else if(ui32Mode == 1) // TX Mode
 	{
-		SPISetCELow();
+		SPISetCELow(); // disable all communication
 
 		// ----- //
-
 		RFWriteRegister(WRITE_REG + SETUP_AW, 0x01); // Set address width to three bytes
 		// set TX address
 		SPISetCSNLow();
@@ -82,7 +76,7 @@ void RFInit(uint32_t ui32Mode)
 		RFWriteRegister(WRITE_REG + SETUP_RETR, 0x12); // set retries to 5 and delay to 500us
 		RFWriteRegister(WRITE_REG + RF_CH, 20); // set RF channel
 		RFWriteRegister(WRITE_REG + DYNPD, 0x01);
-		RFWriteRegister(WRITE_REG + FEATURE, 0x06); // enable dynamic payload length
+		RFWriteRegister(WRITE_REG + FEATURE, 0x04); // enable dynamic payload length
 		RFWriteRegister(WRITE_REG + RF_SETUP, 0x0F); // set data rate at 2mbps and power at 0dBm
 		RFWriteRegister(WRITE_REG + CONFIG, 0x6E); // MAX_RT interrupt on IRQ and TX mode on
 
@@ -90,31 +84,31 @@ void RFInit(uint32_t ui32Mode)
 		SPIRXFlush();
 		// ----- //
 
-		SPISetCEHigh();
+		SPISetCEHigh(); // enable all communication
 	}
 }
 
-// write into a register
+// write into a register. returns status
 uint32_t RFWriteRegister(uint32_t ui32Register, uint32_t ui32Value)
 {
 	uint32_t ui32Status;
 	SPISetCSNLow();
-	SPIDataWrite(ui32Register);
+	SPIDataWrite(ui32Register); // select register to write to
 	ui32Status = SPIDataRead();
-	SPIDataWrite(ui32Value);
+	SPIDataWrite(ui32Value); // write value in register
 	SPIDataRead();
 	SPISetCSNHigh();
 	return ui32Status;
 }
 
-// read from a RF register
+// read from a RF register. returns read value
 uint32_t RFReadRegister(uint32_t ui32Register)
 {
 	uint32_t ui32Value;
 	SPISetCSNLow();
-	SPIDataWrite(ui32Register);
+	SPIDataWrite(ui32Register); // select register to read from
 	ui32Value = SPIDataRead();
-	SPIDataWrite(0xFF);
+	SPIDataWrite(0xFF); // push dummy bits to extract value
 	ui32Value = SPIDataRead();
 	SPISetCSNHigh();
 	return ui32Value;
@@ -131,24 +125,27 @@ uint32_t RFWriteSendBuffer(uint32_t *ui32Data, uint32_t ui32Bytes)
 	SPIDataRead();
 	SPISetCSNHigh();
 
-	SPISetCELow();
+	SPISetCELow(); // disable all communications
 	SPISetCSNLow();
-	SPIDataWrite(WR_TX_PLOAD);
+	SPIDataWrite(WR_TX_PLOAD);  // choose TX payload register
 	SPIDataRead();
 	for(i = 0 ; i < ui32Bytes ; ++i)
 	{
-		SPIDataWrite(ui32Data[i]);
+		SPIDataWrite(ui32Data[i]); // push bytes into TX payload
 		SPIDataRead();
 	}
 	SPISetCSNHigh();
-	SPISetCEHigh();
+	SPISetCEHigh(); // enable all communication
+
+	// Flush SPI RX FIFO to remove residual data
+	SPIRXFlush();
 	return i;
 }
 
 // read from recive buffer. Returns number of bytes read
 uint32_t RFReadRecieveBuffer(uint32_t *ui32Data)
 {
-	uint32_t ui32Bytes = 3;
+	uint32_t ui32Bytes;
 	uint32_t i;
 	// Find number of bytes to read
 	SPISetCSNLow();
@@ -182,5 +179,3 @@ uint32_t RFReadRecieveBuffer(uint32_t *ui32Data)
 		return ui32Bytes;
 	}
 }
-
-

@@ -14,6 +14,9 @@
 #include "nrf24l01.h"
 #include "spi.h"
 
+uint32_t ui32TxBuffer[MAX_PLOAD];
+uint32_t ui32RxBuffer[MAX_PLOAD];
+
 // Define pin to LED color mapping.
 #define LED_0	GPIO_PIN_0
 #define LED_1	GPIO_PIN_1
@@ -51,24 +54,54 @@ void ConfigureUART(void)
 
 void IRQInterruptHandler(void)
 {
+	uint32_t ui32Bytes, i;
 	GPIOIntClear(IRQ_BASE, GPIO_INT_PIN_7); // clear interrupt flag
 
 	SPISetCELow(); // set CE low to cease all operation
 
-	//Flush TX buffer
+//	// --------------- TX operation  ------------- //
+//	//Flush TX buffer
+//	SPISetCSNLow();
+//	SPIDataWrite(FLUSH_TX);
+//	SPIDataRead();
+//	SPISetCSNHigh();
+//
+//	RFWriteRegister(WRITE_REG + STATUSREG, 0x10); // Clear MAX_RT flag
+//
+//	// Do something
+//	// Custom Board Board
+//	GPIOPinWrite(GPIO_PORTB_BASE, LED_0, 0);
+//	SysCtlDelay(SysCtlClockGet()/12);
+//	GPIOPinWrite(GPIO_PORTB_BASE, LED_0, LED_0);
+//	SysCtlDelay(SysCtlClockGet()/12);
+//	UARTprintf("fail\n");
+//
+//	// Launchpad Board
+//	/*GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1, GPIO_PIN_1);
+//	SysCtlDelay(SysCtlClockGet()/12);
+//	GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1, 0);
+//	SysCtlDelay(SysCtlClockGet()/12);
+//	UARTprintf("fail\n");*/
+//
+//	// --------------- TX operation  ------------- //
+
+	// --------------- RX operation  ------------- //
+	ui32Bytes = RFReadRecieveBuffer(ui32RxBuffer);
+	UARTprintf("%d received: ", ui32Bytes);
+	for(i = 0 ; i < ui32Bytes ; ++i)
+	{
+		UARTprintf("%x ", ui32RxBuffer[i]);
+	}
+	UARTprintf("\n");
+
+	// Flush RX buffer
 	SPISetCSNLow();
-	SPIDataWrite(FLUSH_TX);
+	SPIDataWrite(FLUSH_RX);
 	SPIDataRead();
 	SPISetCSNHigh();
 
-	RFWriteRegister(WRITE_REG + STATUSREG, 0x10); // Clear MAX_RT flag
-
-	// Do something
-	GPIOPinWrite(GPIO_PORTB_BASE, LED_0, 0);
-	SysCtlDelay(SysCtlClockGet()/12);
-	UARTprintf("fail\n");
-	GPIOPinWrite(GPIO_PORTB_BASE, LED_0, LED_0);
-	SysCtlDelay(SysCtlClockGet()/12);
+	RFWriteRegister(WRITE_REG + STATUSREG, 0x40); // Clear RX_DR flag
+	// --------------- RX operation  ------------- //
 
 	SPISetCEHigh(); // set CE high again to start all operation
 }
@@ -76,16 +109,30 @@ void IRQInterruptHandler(void)
 // Main 'C' Language entry point.
 int main(void)
 {
-	uint32_t ui32TxBuffer[MAX_PLOAD];
+	uint32_t i;
+
 	// Setup the system clock to run at 50 Mhz from PLL with external oscillator
-    SysCtlClockSet(SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL | SYSCTL_OSC_MAIN | SYSCTL_XTAL_16MHZ);
+    ROM_SysCtlClockSet(SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL | SYSCTL_OSC_MAIN | SYSCTL_XTAL_16MHZ);
 
     // Enable and configure the GPIO port for the LED operation.
-    SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
-    GPIOPinTypeGPIOOutput(GPIO_PORTB_BASE, LED_0 | LED_1 | LED_2 | LED_3 );
+    // Custom Board Board
+    ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
+    ROM_GPIOPinTypeGPIOOutput(GPIO_PORTB_BASE, LED_0 | LED_1 | LED_2 | LED_3 );
 
+    // Launchpad Board
+    /*ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
+    ROM_GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_1);
+    ROM_GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_1, 0);*/
+
+    // --------------- RX operation  ------------- //
     // Initialize RF module port for RX
-    RFInit(1);
+    RFInit(0);
+    // --------------- RX operation  ------------- //
+
+//    // --------------- TX operation  ------------- //
+//    // Initialize RF module port for TX
+//    RFInit(1);
+//    // --------------- TX operation  ------------- //
 
     // Set up IRQ for handling interrupts
     ROM_GPIOPinTypeGPIOInput(IRQ_BASE, IRQ);
@@ -97,18 +144,20 @@ int main(void)
     // configure UART for console operation
     ConfigureUART();
 
-    // Generate packet to send
-    ui32TxBuffer[0] = 0x10;
-    ui32TxBuffer[1] = 0x34;
-    ui32TxBuffer[2] = 0x56;
+//    // --------------- TX operation  ------------- //
+//    // Generate packet to send
+//    for(i = 1 ; i <= 32 ; ++i)
+//    	ui32TxBuffer[i-1] = i;
+//    // --------------- TX operation  ------------- //
 
     // Loop Forever
     while(1)
     {
-    	// Send packet every three seconds
-        RFWriteSendBuffer(ui32TxBuffer, 3);
-        ROM_SysCtlDelay(SysCtlClockGet());
+//    	// --------------- TX operation  ------------- //
+//    	// Send packet every one second
+//        RFWriteSendBuffer(ui32TxBuffer, 32);
+//        ROM_SysCtlDelay(SysCtlClockGet()/3);
+//        // --------------- TX operation  ------------- //
     }
 }
-
 

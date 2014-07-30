@@ -13,7 +13,6 @@
 #include "driverlib/pin_map.h"
 #include "driverlib/ssi.h"
 #include "driverlib/rom.h"
-#include "driverlib/interrupt.h"
 
 
 void SPIInit(void)
