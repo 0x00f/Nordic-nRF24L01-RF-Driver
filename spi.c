@@ -33,13 +33,7 @@ void SPIInit(void)
 	// Configure GPIO pins for CE, CSN and IRQ
 	ROM_GPIOPinTypeGPIOOutput(SPI_PORT_BASE, CSN);
 	ROM_GPIOPinTypeGPIOOutput(CE_BASE, CE);
-	// Set up IRQ for handling interrupts
-	ROM_GPIOPinTypeGPIOInput(IRQ_BASE, IRQ);
-	ROM_GPIOPadConfigSet(IRQ_BASE, IRQ, GPIO_STRENGTH_4MA, GPIO_PIN_TYPE_STD);
-	ROM_GPIOIntTypeSet(IRQ_BASE, IRQ, GPIO_FALLING_EDGE);
-	GPIOIntRegister(IRQ_BASE, IRQInterruptHandler);
-	GPIOIntEnable(IRQ_BASE, GPIO_INT_PIN_7);
-	IntMasterEnable();
+
 
 	//Configure and enable SSI port
 	// Use internal 16Mhz RC oscillator as SSI clock source

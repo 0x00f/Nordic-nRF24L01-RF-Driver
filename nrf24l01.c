@@ -27,9 +27,13 @@ void RFInit(uint32_t ui32Mode)
 		RFWriteRegister(WRITE_REG + SETUP_AW, 0x01); // Set address width to three bytes
 		// set RX pipe 0 address
 		SPIDataWrite(WRITE_REG + RX_ADDR_P0);
+		SPIDataRead();
 		SPIDataWrite(0x3C); // LSB
+		SPIDataRead();
 		SPIDataWrite(0x3C);
+		SPIDataRead();
 		SPIDataWrite(0x3C); // MSB
+		SPIDataRead();
 		RFWriteRegister(WRITE_REG + EN_AA, 0x01); // enable ACK on RX pipe 0
 		RFWriteRegister(WRITE_REG + EN_RXADDR, 0x01); // enable data pipe 0
 		RFWriteRegister(WRITE_REG + RF_CH, 60); // set RF channel
@@ -54,16 +58,24 @@ void RFInit(uint32_t ui32Mode)
 		// set TX address
 		SPISetCSNLow();
 		SPIDataWrite(WRITE_REG + TX_ADDR);
+		SPIDataRead();
 		SPIDataWrite(0x2C); // LSB
+		SPIDataRead();
 		SPIDataWrite(0x3E);
+		SPIDataRead();
 		SPIDataWrite(0x3E); // MSB
+		SPIDataRead();
 		SPISetCSNHigh();
 		// set RX pipe 0 address
 		SPISetCSNLow();
 		SPIDataWrite(WRITE_REG + RX_ADDR_P0);
+		SPIDataRead();
 		SPIDataWrite(0x2C); // LSB
+		SPIDataRead();
 		SPIDataWrite(0x3E);
+		SPIDataRead();
 		SPIDataWrite(0x3E); // MSB
+		SPIDataRead();
 		SPISetCSNHigh();
 		RFWriteRegister(WRITE_REG + EN_AA, 0x01);
 		RFWriteRegister(WRITE_REG + EN_RXADDR, 0x01);
@@ -116,14 +128,17 @@ uint32_t RFWriteSendBuffer(uint32_t *ui32Data, uint32_t ui32Bytes)
 	//Flush TX buffer
 	SPISetCSNLow();
 	SPIDataWrite(FLUSH_TX);
+	SPIDataRead();
 	SPISetCSNHigh();
 
 	SPISetCELow();
 	SPISetCSNLow();
 	SPIDataWrite(WR_TX_PLOAD);
+	SPIDataRead();
 	for(i = 0 ; i < ui32Bytes ; ++i)
 	{
 		SPIDataWrite(ui32Data[i]);
+		SPIDataRead();
 	}
 	SPISetCSNHigh();
 	SPISetCEHigh();
@@ -149,6 +164,7 @@ uint32_t RFReadRecieveBuffer(uint32_t *ui32Data)
 		// Flush RX FIFO
 		SPISetCSNLow();
 		SPIDataWrite(FLUSH_RX);
+		SPIDataRead();
 		SPISetCSNHigh();
 		return 0;
 	}

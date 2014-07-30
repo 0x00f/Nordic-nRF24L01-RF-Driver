@@ -2,10 +2,12 @@
 #include <stdbool.h>
 #include "inc/hw_types.h"
 #include "inc/hw_memmap.h"
+#include "inc/hw_ints.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/gpio.h"
 #include "driverlib/uart.h"
 #include "driverlib/pin_map.h"
+#include "driverlib/interrupt.h"
 #include "driverlib/rom.h"
 #include "driverlib/ssi.h"
 #include "utils/uartstdio.h"
@@ -47,11 +49,34 @@ void ConfigureUART(void)
     UARTStdioConfig(0, 115200, 16000000);
 }
 
+void IRQInterruptHandler(void)
+{
+	GPIOIntClear(IRQ_BASE, GPIO_INT_PIN_7); // clear interrupt flag
+
+	SPISetCELow(); // set CE low to cease all operation
+
+	//Flush TX buffer
+	SPISetCSNLow();
+	SPIDataWrite(FLUSH_TX);
+	SPIDataRead();
+	SPISetCSNHigh();
+
+	RFWriteRegister(WRITE_REG + STATUSREG, 0x10); // Clear MAX_RT flag
+
+	// Do something
+	GPIOPinWrite(GPIO_PORTB_BASE, LED_0, 0);
+	SysCtlDelay(SysCtlClockGet()/12);
+	UARTprintf("fail\n");
+	GPIOPinWrite(GPIO_PORTB_BASE, LED_0, LED_0);
+	SysCtlDelay(SysCtlClockGet()/12);
+
+	SPISetCEHigh(); // set CE high again to start all operation
+}
+
 // Main 'C' Language entry point.
 int main(void)
 {
 	uint32_t ui32TxBuffer[MAX_PLOAD];
-	uint32_t ui32RxBuffer[MAX_PLOAD];
 	// Setup the system clock to run at 50 Mhz from PLL with external oscillator
     SysCtlClockSet(SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL | SYSCTL_OSC_MAIN | SYSCTL_XTAL_16MHZ);
 
@@ -62,31 +87,28 @@ int main(void)
     // Initialize RF module port for RX
     RFInit(1);
 
+    // Set up IRQ for handling interrupts
+    ROM_GPIOPinTypeGPIOInput(IRQ_BASE, IRQ);
+    ROM_GPIOPadConfigSet(IRQ_BASE, IRQ, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPU);
+    GPIOIntRegister(IRQ_BASE, IRQInterruptHandler);
+    ROM_GPIOIntTypeSet(IRQ_BASE, IRQ, GPIO_FALLING_EDGE);
+    GPIOIntEnable(IRQ_BASE, GPIO_INT_PIN_7);
+
+    // configure UART for console operation
     ConfigureUART();
 
+    // Generate packet to send
     ui32TxBuffer[0] = 0x10;
-    RFWriteSendBuffer(ui32TxBuffer, 1);
+    ui32TxBuffer[1] = 0x34;
+    ui32TxBuffer[2] = 0x56;
 
     // Loop Forever
     while(1)
     {
-    	GPIOPinWrite(GPIO_PORTB_BASE, LED_0, 0);
-    	SysCtlDelay(SysCtlClockGet()/12);
-    	GPIOPinWrite(GPIO_PORTB_BASE, LED_0, LED_0);
-    	SysCtlDelay(SysCtlClockGet()/12);
-//    	UARTprintf("Rohit\n");
-//
-//       UARTprintf("%x\n", RFReadRegister(READ_REG + CONFIG));
+    	// Send packet every three seconds
+        RFWriteSendBuffer(ui32TxBuffer, 3);
+        ROM_SysCtlDelay(SysCtlClockGet());
     }
 }
 
-void IRQInterruptHandler(void)
-{
-	GPIOIntClear(IRQ_BASE, GPIO_INT_PIN_7);
-	RFWriteRegister(WRITE_REG + STATUSREG, 0x10);
-	//GPIOPinWrite(GPIO_PORTB_BASE, LED_0, 0);
-	//SysCtlDelay(SysCtlClockGet()/12);
-	UARTprintf("fail\n");
-	//GPIOPinWrite(GPIO_PORTB_BASE, LED_0, LED_0);
-	//SysCtlDelay(SysCtlClockGet()/12);
-}
+
